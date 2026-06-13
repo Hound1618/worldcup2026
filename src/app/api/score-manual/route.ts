@@ -55,7 +55,7 @@ export async function GET(req: NextRequest) {
         events ?? []
       )
 
-      await supabaseAdmin.from('points').upsert({
+      const { error: upsertError } = await supabaseAdmin.from('points').upsert({
         user_id: pred.user_id,
         fixture_id: fixture.id,
         ...pts,
@@ -66,6 +66,7 @@ export async function GET(req: NextRequest) {
         fixture: `${fixture.home_team} vs ${fixture.away_team}`,
         user: pred.user_id,
         points: pts,
+        upsertError: upsertError?.message ?? null,
       })
     }
   }
