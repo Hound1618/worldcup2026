@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
   if (!fixture) return NextResponse.json({ error: 'Fixture not found' }, { status: 404 })
 
   const isPast = new Date(fixture.kickoff) < new Date()
-  const isStarted = fixture.status !== 'SCHEDULED'
+  const isStarted = fixture.status === 'FINISHED' || fixture.status === 'IN_PLAY'
 
   if (!admin_override && (isPast || isStarted)) {
     return NextResponse.json({ error: 'Predictions locked' }, { status: 400 })

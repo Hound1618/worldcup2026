@@ -27,7 +27,11 @@ export default function PredictPage() {
   const [adminEmail, setAdminEmail] = useState('')
 
   const isAdmin = currentUser?.is_admin
-  const isLocked = fixture && (fixture.status !== 'SCHEDULED' || new Date(fixture.kickoff) < new Date())
+  const isLocked = fixture && (
+  fixture.status === 'FINISHED' || 
+  fixture.status === 'IN_PLAY' || 
+  new Date(fixture.kickoff) < new Date()
+)
 
   useEffect(() => {
     async function load() {
