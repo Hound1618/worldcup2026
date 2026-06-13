@@ -9,10 +9,13 @@ export default function Leaderboard() {
 
   useEffect(() => {
     async function load() {
-      const { data: allUsers } = await supabase.from('users').select('*').order('name')
-      const { data: allPoints } = await supabase.from('points').select('*')
+      const { data: allUsers, error: userError } = await supabase.from('users').select('*').order('name')
+const { data: allPoints, error: pointsError } = await supabase.from('points').select('*')
 
-      if (!allUsers) return
+console.log('Users:', allUsers, 'Error:', userError)
+console.log('Points:', allPoints, 'Error:', pointsError)
+
+if (!allUsers) return
 
       const ranked = allUsers.map(u => {
         const pts = allPoints?.filter(p => p.user_id === u.id) ?? []
