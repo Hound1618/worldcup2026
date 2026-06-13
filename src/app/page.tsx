@@ -9,20 +9,39 @@ export default function Leaderboard() {
 
   useEffect(() => {
     async function load() {
-      const { data: allUsers, error: userError } = await supabase.from('users').select('*').order('name')
-const { data: allPoints, error: pointsError } = await supabase.from('points').select('*')
+      const { data: allUsers } = await supabase
+        .from('users')
+        .select('*')
+        .order('name')
 
-console.log('Users:', allUsers, 'Error:', userError)
-console.log('Points:', allPoints, 'Error:', pointsError)
+      const { data: allPoints } = await supabase
+        .from('points')
+        .select('*')
 
-if (!allUsers) return
+      const { data: allPredictions } = await supabase
+        .from('predictions')
+        .select('user_id')
+
+      console.log('Users:', allUsers)
+      console.log('Points:', allPoints)
+      console.log('Predictions:', allPredictions)
+
+      if (!allUsers) return
 
       const ranked = allUsers.map(u => {
-        const pts = allPoints?.filter(p => p.user_id === u.id) ?? []
+        const pts = (allPoints ?? []).filter(p => p.user_id === u.id)
+        const preds = (allPredictions ?? []).filter(p => p.user_id === u.id)
         const total = pts.reduce((s, p) => s + (p.total_points ?? 0), 0)
         const base = pts.reduce((s, p) => s + (p.base_points ?? 0), 0)
         const optional = pts.reduce((s, p) => s + (p.optional_points ?? 0), 0)
-        return { ...u, total, base, optional, gamesPlayed: pts.length }
+        return {
+          ...u,
+          total,
+          base,
+          optional,
+          gamesPlayed: preds.length,
+          gamesScored: pts.length
+        }
       }).sort((a, b) => b.total - a.total)
 
       setUsers(ranked)
@@ -41,9 +60,7 @@ if (!allUsers) return
       </div>
 
       <div className="card mb-6">
-        <div className="flex items-center justify-between mb-1">
-          <span className="text-xs text-gray-500 uppercase tracking-widest">Points System</span>
-        </div>
+        <div className="text-xs text-gray-500 uppercase tracking-widest mb-2">Points System</div>
         <div className="flex flex-wrap gap-3 mt-2 text-sm">
           <span className="bg-gray-800 px-3 py-1 rounded-full">✅ Correct winner <strong className="text-yellow-400">+1</strong></span>
           <span className="bg-gray-800 px-3 py-1 rounded-full">🎯 Exact score <strong className="text-yellow-400">+3</strong></span>
@@ -59,7 +76,9 @@ if (!allUsers) return
           {users.map((u, i) => (
             <Link href={`/profile/${u.id}`} key={u.id}>
               <div className={`card flex items-center gap-4 hover:border-yellow-500 transition-colors cursor-pointer ${i === 0 ? 'border-yellow-500 bg-yellow-950/20' : ''}`}>
-                <div className="text-2xl w-8 text-center">{medals[i] ?? `#${i + 1}`}</div>
+                <div className="text-2xl w-8 text-center">
+                  {medals[i] ?? `#${i + 1}`}
+                </div>
                 <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden flex-shrink-0">
                   {u.avatar_url
                     ? <img src={u.avatar_url} alt={u.name} className="w-full h-full object-cover" />
@@ -72,7 +91,9 @@ if (!allUsers) return
                     {u.is_core && <span className="text-xs bg-yellow-900 text-yellow-300 px-2 py-0.5 rounded-full">Core</span>}
                     {u.is_admin && <span className="text-xs bg-red-900 text-red-300 px-2 py-0.5 rounded-full">Admin</span>}
                   </div>
-                  <div className="text-xs text-gray-500">{u.gamesPlayed} predictions made</div>
+                  <div className="text-xs text-gray-500">
+                    {u.gamesPlayed} predictions · {u.gamesScored} scored
+                  </div>
                 </div>
                 <div className="text-right">
                   <div className="text-2xl font-black text-yellow-400">{u.total}</div>
