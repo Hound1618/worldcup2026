@@ -58,7 +58,11 @@ export async function GET(req: NextRequest) {
       const { error: upsertError } = await supabaseAdmin.from('points').upsert({
         user_id: pred.user_id,
         fixture_id: fixture.id,
-        ...pts,
+        win_points: pts.winPoints,
+        score_points: pts.scorePoints,
+        optional_points: pts.optionalPoints,
+        base_points: pts.basePoints,
+        total_points: pts.totalPoints,
         calculated_at: new Date().toISOString(),
       }, { onConflict: 'user_id,fixture_id' })
 
